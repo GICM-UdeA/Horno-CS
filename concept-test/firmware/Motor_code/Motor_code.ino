@@ -50,6 +50,7 @@ void loop(){
 }
 
 void controler(){
+  // receiving command
   String command = "";
 
   while(Wire.available()){
@@ -62,8 +63,8 @@ void controler(){
   } 
   if (command[0] == 'R'){ // R --> Run
     start_round = true;
-    digitalWrite(enb_pin, 0);
-    digitalWrite(LED_BUILTIN, 1);
+    digitalWrite(enb_pin, 1);
+    digitalWrite(LED_BUILTIN, 1); // led running indicator
   }  
   if (command[0] == 'r'){ // r --> reset
     reset_system();
@@ -83,14 +84,17 @@ void set_speed(int motor_speed){
 }
 
 void reset_system(){
-  digitalWrite(enb_pin, 1); // disable for does not consume current
-  digitalWrite(dir_pin, 1);// counterclockwise by default
-  digitalWrite(signal_end_out, 1);
+  digitalWrite(enb_pin, 0); // disable for does not consume current
+  digitalWrite(dir_pin, 0);// counterclockwise by default
+
+  // produce a pulse to notify master about the resetting of the system
+  digitalWrite(signal_end_out, 1); 
   digitalWrite(signal_end_out, 0);
-  digitalWrite(LED_BUILTIN, 0);
+
+  digitalWrite(LED_BUILTIN, 0); // LED running indicator off
   start_round = false;
 }
 
 void go_back(){
-  digitalWrite(dir_pin, 0);
+  digitalWrite(dir_pin, 1); // changing the direction
 }
