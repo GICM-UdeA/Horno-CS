@@ -55,24 +55,37 @@ void serialEvent() {
 
 void set_rpm() {
   /*to send "set speed" command to the slave in address 1 (motor) */
-  Wire.beginTransmission(0X01); // address 1 for motor controler
+
+  Wire.beginTransmission(0X01); // address 1 for motor controller
   Wire.write('S'); // S --> set Speed 
-  Wire.write(rpm_value);
+  String aux_rpm = String(rpm_value);
+  // it is necessary to send character by character
+  for(int i =0; i < aux_rpm.length(); i++ ) {
+    Wire.write(aux_rpm[i]);
+  }
   Wire.endTransmission();
 }
 
 void run_measurement() {
   /*to send "run" command to the slave in address 1 (motor) */
   measure_temp = true;
-  Wire.beginTransmission(0X01); // address 21 for motor controler
+
+  // first reset the system
+  Wire.beginTransmission(0X01); // address 1 for motor controller
+  Wire.write('r'); // R --> Start the round
+  Wire.endTransmission();
+
+  // then start the round
+  Wire.beginTransmission(0X01);
   Wire.write('R'); // R --> Start the round
   Wire.endTransmission();
 
-  Serial.println("Runing measurement");
+  Serial.println("Running measurement");
 }
 
 void end_measure(){
   measure_temp = false;
+  Serial.println("Run finished");
 }
 
 double readThermocouple() {
