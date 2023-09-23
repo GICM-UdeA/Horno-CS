@@ -9,10 +9,10 @@ const int MAX6675_CS = 5;
 const int MAX6675_SCK = 6;
 
 // to enable the measurement
-bool measure_temp = false;
+volatile bool measure_temp = false;
 
 // to stop the measurement
-const int end_pin = 2;
+const int end_pin = 3;
 
 // speed variable
 int rpm_value = 0;
@@ -22,11 +22,11 @@ void setup() {
   pinMode(MAX6675_CS, OUTPUT);
   pinMode(MAX6675_SO, INPUT);
   pinMode(MAX6675_SCK, OUTPUT);
-  
+  pinMode(3, INPUT);
   Serial.begin(115200);
   Wire.begin();
 
-  attachInterrupt(digitalPinToInterrupt(end_pin), end_measure, RISING);
+  attachInterrupt(digitalPinToInterrupt(end_pin), end_measure, FALLING);
 }
 
 void loop() {
@@ -44,12 +44,15 @@ void serialEvent() {
   if (command[0] == 'S'){ // S --> to set the speed (in rpm)
     rpm_value = command.substring(1).toInt();
     set_rpm();
-    Serial.print("Speed was set to ");
-    Serial.print(rpm_value);
-    Serial.println(" rpm");
   } 
   if (command[0] == 'R'){ // R --> to start the measurement
     run_measurement();
+  }
+  if (command[0] == 'r'){ // r --> to stop and reset the parameters of the motor
+    reset_motor();
+  }
+  if (command[0] == 'i'){ // i --> to invert the movement direction
+    invert_motor();
   }
 }
 
@@ -64,28 +67,42 @@ void set_rpm() {
     Wire.write(aux_rpm[i]);
   }
   Wire.endTransmission();
+  Serial.print("Speed was set to ");
+  Serial.print(rpm_value);
+  Serial.println(" rpm");
 }
 
 void run_measurement() {
   /*to send "run" command to the slave in address 1 (motor) */
+  Serial.println("RUN");
   measure_temp = true;
-
-  // first reset the system
-  Wire.beginTransmission(0X01); // address 1 for motor controller
-  Wire.write('r'); // R --> Start the round
-  Wire.endTransmission();
 
   // then start the round
   Wire.beginTransmission(0X01);
   Wire.write('R'); // R --> Start the round
   Wire.endTransmission();
+}
 
-  Serial.println("Running measurement");
+void reset_motor(){
+  // reset the system
+  Serial.println("RES");
+  measure_temp = false;
+  Wire.beginTransmission(0X01); // address 1 for motor controller
+  Wire.write('r'); // R --> Start the round
+  Wire.endTransmission();
+}
+
+void invert_motor(){
+  // reset the system
+  Serial.println("INV");
+  Wire.beginTransmission(0X01); // address 1 for motor controller
+  Wire.write('i'); // R --> Start the round
+  Wire.endTransmission();
 }
 
 void end_measure(){
   measure_temp = false;
-  Serial.println("Run finished");
+  Serial.println("FIN");
 }
 
 double readThermocouple() {
