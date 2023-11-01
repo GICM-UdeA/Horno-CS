@@ -1,6 +1,8 @@
 /*Motor code...*/
 
 #include <Wire.h>
+#include <Stepper.h>
+
 
 // pins definition
 int enb_pin = 7;
@@ -12,8 +14,15 @@ int signal_end_out = 5;
 
 // auxiliary variables
 bool start_round;
-long int pulse_duration;
 int dir = 1; // counterclockwise by default
+
+//
+int stepsPerRevolution = 200;
+Stepper myStepper(stepsPerRevolution, 8, 9, 10, 11);
+float maxSpeed = 2.8; // m/min
+float minSpeed = 0.05; // m/min
+float currentSpeed = 1.0;
+
 
 void setup(){
   Wire.begin(0x01); // I2C address: 1
@@ -34,16 +43,14 @@ void setup(){
   attachInterrupt(digitalPinToInterrupt(end1_pin), go_back, FALLING);
 
   Wire.onReceive(controler);
+  set_speed(currentSpeed);
 }
 
 void loop(){
 
   if (start_round){
     // motor step pulse
-    digitalWrite(step_pin, HIGH);
-    delayMicroseconds(pulse_duration);
-    digitalWrite(step_pin, LOW);
-    delayMicroseconds(pulse_duration);
+    myStepper.step(1);
   }
 }
 
@@ -57,7 +64,8 @@ void controler(){
   }
 
   if (command[0] == 'S'){ // S --> speed
-    set_speed(command.substring(1).toInt());
+    float desiredSpeed = command.substring(1).toFloat();
+    set_speed(command.substring(1).toFloat());
   } 
   if (command[0] == 'R'){ // R --> Run
     start_round = true;
@@ -76,11 +84,15 @@ void controler(){
 void set_speed(int motor_speed){
   // motor_speed [rpm] = 1.8°/360° * pulse_speed (Hz) * 60 
   // based on https://youtu.be/VCv4PeEWfzQ
-  double pulse_speed = 200 * motor_speed * 1/60.0; // rpm
-
-  // changing to microseconds
-  pulse_duration = int(1000000 / pulse_speed); 
-  Serial.println("Speed set to " + String(motor_speed));
+  if (motor_speed < minSpeed) {
+    motor_speed = minSpeed;
+  } else if (motor_speed > maxSpeed) {
+    motor_speed = maxSpeed;
+  }
+  currentSpeed = motor_speed;
+  float stepsPerSecond = (currentSpeed / 60) * stepsPerRevolution;
+  myStepper.setSpeed(stepsPerSecond);
+  Serial.println("Speed set to " + String(currentSpeed) + " m/min");
 }
 
 void reset_system_1(){
