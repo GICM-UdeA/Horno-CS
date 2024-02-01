@@ -1,6 +1,0 @@
-{
-    "configuration": "cpu=atmega328",
-    "board": "arduino:avr:nano",
-    "port": "COM10",
-    "sketch": "concept-test\\firmware\\oven_code\\oven_code.ino"
-}
