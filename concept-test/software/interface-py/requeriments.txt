@@ -1,0 +1,5 @@
+pyqt5
+pyserial
+pathlib
+matplotlib
+pandas==1.5
