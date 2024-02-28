@@ -6,18 +6,13 @@ from serial.tools.list_ports import comports
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox
 from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QPixmap
-from matplotlib.colors import Normalize
-import matplotlib.pyplot as plt
 import pandas as pd
 import warnings
 import json
+from numpy import random, arange, zeros
 from interfaz import *
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
-
-scurve_sp_cmap = plt.get_cmap("inferno").copy()  # cmap for the summary 2D plot
-scurve_sp_norm = Normalize(vmin=0.0, vmax=200, clip=False)
-
 
 class Interfaz(Ui_MainWindow):
     def __init__(self, interfaz):
@@ -25,7 +20,7 @@ class Interfaz(Ui_MainWindow):
         self.setupUi(interfaz)
 
         # auxiliar vars
-        self.n_heights = 10
+        self.n_probes = 5
         self.plot_index = 0
         self.current_height = 0
 
@@ -51,7 +46,6 @@ class Interfaz(Ui_MainWindow):
 
         # setting up the data viewer panel
         self.setup_canvas()
-
         self.plot_timer = QTimer(self.centralwidget)
         self.plot_timer.timeout.connect(self.update_plots)
         self.plot_delay = 100
@@ -254,21 +248,23 @@ class Interfaz(Ui_MainWindow):
             self.show_critical_messageBox(err)
 
     # ------------------------------------- plot functions -----------------------------------------
-    def setup_canvas(self):
+    def setup_canvas(self, first_time=True):
         self.reset_data()
-        self.produce_plots(first_time=True)
+        self.produce_plots(first_time=first_time)
         self.temp_plot_widget.canvas.draw()
         self.tempPID_plot_widget.canvas.draw()
+        self.temp_map_widget.canvas.draw()
 
 
     def reset_data(self):
         # initialize data with zeros
-        self.data_base = [pd.DataFrame()] * self.n_heights
-        for i in  range(self.n_heights):
-            self.data_base[i] = self.data_base[i].append(
-                {"time": 0, "T": 0, "T_PID": 0},
-                ignore_index=True
-            )
+        data = dict(zip(["T1", "T2", "T3", "T4", "T5", "T6", "T_PID"], zeros((7, 100))))
+        data["time"] = arange(-24750, 250, 250)
+
+        self.data_base = pd.DataFrame(
+            data,
+            columns=["time", "T1", "T2", "T3", "T4", "T5", "T6", "T_PID"]
+        )
 
 
     def enb_dis_data_taking(self):
@@ -289,23 +285,27 @@ class Interfaz(Ui_MainWindow):
             # disable linear plots timer
             self.plot_timer.stop()
 
-        #     return True
-
-        # except:
-        #     self.motor_enb_dis_pushButton.setChecked(False)
-            
-        #     return False
-
 
     def update_plots(self):
         # get data from arduino
         self.arduino_request("g")
         res = json.loads(self.arduino_response())
+        # # simulate data to test interface
+        # setP_temp = self.setPoint_temp_doubleSpinBox.value()
+        # res = {
+        #     "T1": random.normal(setP_temp-10, 0.8),
+        #     "T2": random.normal(setP_temp-5, 0.8),
+        #     "T3": random.normal(setP_temp, 2),
+        #     "T4": random.normal(setP_temp-5, 0.8),
+        #     "T5": random.normal(setP_temp-10, 0.8),
+        #     "T_PID": random.normal(setP_temp, 0.2)
+        # }
+
         # add time value
-        res["time"] = self.data_base[self.current_height]["time"].iloc[-1] + self.plot_delay
+        res["time"] = self.data_base["time"].iloc[-1] + self.plot_delay
         
         # add data to data_base
-        self.data_base[self.current_height] = self.data_base[self.current_height].append(
+        self.data_base = self.data_base.append(
             res,
             ignore_index=True,
         )
@@ -314,73 +314,113 @@ class Interfaz(Ui_MainWindow):
         self.produce_plots()
         self.temp_plot_widget.canvas.draw()
         self.tempPID_plot_widget.canvas.draw()
-
-        # ------------------ section to produce temperature maps -------------
-        # self.old_index = 0
-        # if t  % self.delay_spinBox.value() == 0 and abs(self.pos_spinBox.value() - self.path_steps_spinBox.value())!=0:
-        #     self.pos_spinBox.setValue(self.pos_spinBox.value() + self.steps_spinBox.value())
-        #     self.move_motor()
-        #     self.new_index = len(self.T_data)-1
-        #     self.map[0] += [sum(self.T_data[self.old_index:self.new_index])/len(self.T_data)]
-        #     self.old_index=self.new_index
-        #     self.update_map = True
-        # else:
-        #     self.update_map = False
-        # self.temp_map_widget.canvas.draw()
+        self.temp_map_widget.canvas.draw()
 
 
     def produce_plots(self, first_time=False, to_render=True):
         self.temp_plot_widget.canvas.axes.cla()
         self.tempPID_plot_widget.canvas.axes.cla()
+        self.temp_map_widget.canvas.axes.cla()
 
         if not to_render:
-            self.plot_index = 0
+            self.plot_index = 99
+
 
         self.temp_plot_widget.canvas.axes.plot(
-            self.data_base[self.current_height]["time"][self.plot_index:],
-            self.data_base[self.current_height]["T"][self.plot_index:],
-            "--.g"
+            self.data_base["time"][self.plot_index:],
+            self.data_base["T1"][self.plot_index:],
+            label="T1"
+        )
+        self.temp_plot_widget.canvas.axes.plot(
+            self.data_base["time"][self.plot_index:],
+            self.data_base["T2"][self.plot_index:],
+            label="T2"
+        )
+        self.temp_plot_widget.canvas.axes.plot(
+            self.data_base["time"][self.plot_index:],
+            self.data_base["T3"][self.plot_index:],
+            label="T3"
+        )
+        self.temp_plot_widget.canvas.axes.plot(
+            self.data_base["time"][self.plot_index:],
+            self.data_base["T4"][self.plot_index:],
+            label="T4"
+        )
+        self.temp_plot_widget.canvas.axes.plot(
+            self.data_base["time"][self.plot_index:],
+            self.data_base["T5"][self.plot_index:],
+            label="T5"
+        )
+        self.temp_plot_widget.canvas.axes.plot(
+            self.data_base["time"][self.plot_index:],
+            self.data_base["T6"][self.plot_index:],
+            label="T6"
         )
         self.tempPID_plot_widget.canvas.axes.plot(
-            self.data_base[self.current_height]["time"][self.plot_index:],
-            self.data_base[self.current_height]["T_PID"][self.plot_index:],
+            self.data_base["time"][self.plot_index:],
+            self.data_base["T_PID"][self.plot_index:],
             "--.r"
         )
+        vmax = self.setPoint_temp_doubleSpinBox.value() + 10\
+            if first_time\
+            else self.data_base[["T1", "T2", "T3", "T4", "T5", "T6"]].max().max()
+
+        self.ims = self.temp_map_widget.canvas.axes.imshow(
+            self.data_base[["T1", "T2", "T3", "T4", "T5", "T6"]].iloc[self.plot_index:].T,
+            aspect="auto",
+            cmap='inferno',
+            origin="lower",
+            interpolation='bilinear',
+            vmin=0, 
+            vmax=vmax,
+            extent=[
+                self.data_base["time"].iloc[self.plot_index],
+                self.data_base["time"].iloc[-1], 
+                0,
+                6,
+            ]
+        )
+
+        # stylizing 
+        if first_time:
+            self.temp_plot_widget.canvas.axes.set_ylim(
+                self.setPoint_temp_doubleSpinBox.value() - 10,
+                self.setPoint_temp_doubleSpinBox.value() + 10,
+            )
+            self.plot_index = 0
+            self.cbar = self.temp_map_widget.canvas.figure.colorbar(
+                self.ims,
+                ax=self.temp_map_widget.canvas.axes,
+                pad=0.15,
+                fraction=0.048,
+                orientation="horizontal",
+            )
+        else:
+            self.cbar.mappable.set_clim(vmin=0,vmax=vmax)
+            self.temp_plot_widget.canvas.axes.set_ylim(
+                self.data_base[["T1", "T2", "T3", "T4", "T5", "T6"]].iloc[-1].min() - 5,
+                self.data_base[["T1", "T2", "T3", "T4", "T5", "T6"]].iloc[-1].max() + 5,
+            )
 
         self.temp_plot_widget.canvas.axes.grid(True, color="gray", linewidth=0.5)
         self.temp_plot_widget.canvas.axes.set_title("Temperatura de la muestra")
         self.temp_plot_widget.canvas.axes.set_ylabel(r"T ($^\circ$C)")
         self.temp_plot_widget.canvas.axes.set_xlabel("t (ms)")
+        self.temp_plot_widget.canvas.axes.legend(bbox_to_anchor=(1.13, 0.5), loc="lower right", fontsize=8)
+
         self.tempPID_plot_widget.canvas.axes.grid(True, color="gray", linewidth=0.5)
         self.tempPID_plot_widget.canvas.axes.set_title("Temperatura de control")
         self.tempPID_plot_widget.canvas.axes.set_ylabel(r"T ($^\circ$C)")
         self.tempPID_plot_widget.canvas.axes.set_xlabel("t (ms)")
+        self.tempPID_plot_widget.canvas.axes.set_ylim(
+            self.setPoint_temp_doubleSpinBox.value() - 10,
+            self.setPoint_temp_doubleSpinBox.value() + 10,
+        )
+        self.temp_map_widget.canvas.axes.set_yticks(range(0, 6), ["T1", "T2", "T3", "T4", "T5", "T6"])
 
-        # this index is to draw just 20 points in the linear plots
-        if self.data_base[self.current_height].shape[0] > 20:
+        #this index is to draw just 20 points in the linear plots
+        if self.data_base.shape[0] > 119:
             self.plot_index += 1
-
-
-        #-------------- section to plot the temperature map -----------------
-        # self.temp_map_widget.canvas.axes.cla()
-        # if self.update_map:
-        #     print("Entro")
-        #     self.ims = self.temp_map_widget.canvas.axes.imshow(
-        #         self.map,
-        #         #aspect= 20.0 / 20,
-        #         cmap=scurve_sp_cmap,
-        #         norm=scurve_sp_norm,
-        #         origin="lower",
-        #     )
-        #     if first_time:
-        #         self.plot_index = 0
-        #         self.cbar = self.temp_map_widget.canvas.figure.colorbar(
-        #             self.ims,
-        #             ax=self.temp_map_widget.canvas.axes,
-        #             pad=0.15,
-        #             fraction=0.048,
-        #             orientation="horizontal"
-        #         )
 
 
     def reset_plots(self):
@@ -396,8 +436,8 @@ class Interfaz(Ui_MainWindow):
         if msgBox.clickedButton() == buttonY:
             self.temp_plot_widget.canvas.axes.cla()
             self.temp_map_widget.canvas.axes.cla()
-            #self.temp_map_widget.canvas.axes.cla()
-            self.setup_canvas()
+            self.temp_map_widget.canvas.axes.cla()
+            self.setup_canvas(first_time=False)
             self.show_status_message("Graficas borradas")
 
         elif msgBox.clickedButton() == buttonN:
@@ -425,7 +465,7 @@ class Interfaz(Ui_MainWindow):
             self.show_status_message("Error estableciendo ruta")
 
 
-    def save_plots(self):
+    def save_plots(self): #fix
         # This functions doesn't work well, it is necessary to create the figures from the begin
         # since take the plot from interface result in a very bad resolution image. It could be
         # better to save data insted of plot.
@@ -434,8 +474,10 @@ class Interfaz(Ui_MainWindow):
             self.produce_plots(to_render=False)
             self.temp_plot_widget.canvas.draw()
             self.tempPID_plot_widget.canvas.draw()
+            self.temp_map_widget.canvas.draw()
             self.temp_plot_widget.canvas.axes.figure.savefig(self.output_path / "plot_test.png")
             self.tempPID_plot_widget.canvas.axes.figure.savefig(self.output_path / "plotPID_test.png")
+            self.temp_map_widget.canvas.axes.figure.savefig(self.output_path / "map_test.png")
             saved = True
         except:
             saved = False

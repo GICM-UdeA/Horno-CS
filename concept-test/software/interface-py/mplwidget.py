@@ -9,7 +9,7 @@ class MplWidget(QWidget):
 		super(MplWidget, self).__init__()
 		
 		self.vertical_layout = QVBoxLayout()
-		self.canvas = FigureCanvas(Figure(facecolor="#f0f0f0"))
+		self.canvas = FigureCanvas(Figure(dpi=100, facecolor="#f0f0f0"))
 		self.toolbar = NavigationToolbar(self.canvas, parent)
 
 		self.vertical_layout.addWidget(self.canvas)
