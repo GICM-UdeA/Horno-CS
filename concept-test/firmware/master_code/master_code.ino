@@ -3,6 +3,7 @@
     It control the motor and the oven under
     user serial instructions... 
 */
+#include "my_max6675.h"
 #include "max6675.h"
 #include <PID_v1.h>
 #include <Wire.h> // for I2C comunication S
@@ -28,20 +29,31 @@ double kp =2;  double ki = 5;  double kd = 1;
 //////////////////////////////////////////////////////////
 
 PID PID_controller(&temperature, &PID_output, &Setpoint, kp, ki, kd, DIRECT);
-MAX6675 temp_sensor(6, 5, 4);
-MAX6675 temp_sensor_check(9, 8, 7);
 
+//pin declaration
 
-void setup()
-{
+int PID_CS_PIN = 2;
+int T1_CS_PIN = 3;
+int T2_CS_PIN = 4;
+int T3_CS_PIN = 5;
+int T4_CS_PIN = 6;
+int T5_CS_PIN = 7;
+
+MY_MAX6675 PID_sensor(PID_CS_PIN);
+MY_MAX6675 T1_sensor(T1_CS_PIN);
+MY_MAX6675 T2_sensor(T2_CS_PIN);
+MY_MAX6675 T3_sensor(T3_CS_PIN);
+MY_MAX6675 T4_sensor(T4_CS_PIN);
+MY_MAX6675 T5_sensor(T5_CS_PIN);
+
+void setup(){
     //Serial.begin(9600);
     Serial.begin(115200);
     pinMode(PWM_pin, OUTPUT);
     Wire.begin();
 
-
     // intialize variables
-    temperature = temp_sensor.readCelsius();
+    temperature = PID_sensor.readCelsius();
     Setpoint = 50;
 
     // turn the PID on
@@ -50,11 +62,10 @@ void setup()
 
 }
 
-void loop()
-{
+void loop(){
     if( oven_state){
         // Read the current value of temperature
-        temperature = temp_sensor.readCelsius();
+        temperature = PID_sensor.readCelsius();
         PID_controller.Compute();
 
         analogWrite(PWM_pin, 255-PID_output); // PID_output lives in [0, 255]
@@ -69,12 +80,24 @@ void loop()
 void serialEvent(){
     String command  = Serial.readString();
     //measure commands
-    if (command.substring(0, 2) == "g"){ // g --> get data
-        Serial.print("{\"T_PID\":");
-        Serial.print(temperature);
+    if (command[0] == 'g'){ // g --> get data
+        Serial.print("{\"T1\":");
+        Serial.print(T1_sensor.readCelsius());
+        Serial.print(",");  
+        Serial.print("\"T2\":");
+        Serial.print(T2_sensor.readCelsius());
+        Serial.print(",");        
+        Serial.print("\"T3\":");
+        Serial.print(T3_sensor.readCelsius());
         Serial.print(",");
-        Serial.print("\"T\":");
-        Serial.print(temp_sensor_check.readCelsius());
+        Serial.print("\"T4\":");
+        Serial.print(T4_sensor.readCelsius());
+        Serial.print(",");        
+        Serial.print("\"T5\":");
+        Serial.print(T5_sensor.readCelsius());
+        Serial.print(",");
+        Serial.print("\"T_PID\":");
+        Serial.print(temperature);
         Serial.println("}");
     }
 
