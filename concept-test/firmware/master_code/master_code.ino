@@ -4,7 +4,6 @@
     user serial instructions... 
 */
 #include "my_max6675.h"
-#include "max6675.h"
 #include <PID_v1.h>
 #include <Wire.h> // for I2C comunication S
 
@@ -15,8 +14,6 @@ double Setpoint;   // temperature setpoint.
 
 double temperature = 0; // PID input
 double PID_output = 0; // PID output
-int button_pressed = 0;
-int menu_activated=0;
 
 long int rpm_speed = 400;
 int position = 0;
