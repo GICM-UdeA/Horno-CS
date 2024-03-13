@@ -29,12 +29,13 @@ PID PID_controller(&temperature, &PID_output, &Setpoint, kp, ki, kd, DIRECT);
 
 //pin declaration
 
-int PID_CS_PIN = 2;
-int T1_CS_PIN = 3;
-int T2_CS_PIN = 4;
-int T3_CS_PIN = 5;
-int T4_CS_PIN = 6;
-int T5_CS_PIN = 7;
+int PID_CS_PIN = 3;
+int T1_CS_PIN = 4;
+int T2_CS_PIN = 5;
+int T3_CS_PIN = 6;
+int T4_CS_PIN = 7;
+int T5_CS_PIN = 8;
+int T6_CS_PIN = 9;
 
 MY_MAX6675 PID_sensor(PID_CS_PIN);
 MY_MAX6675 T1_sensor(T1_CS_PIN);
@@ -42,6 +43,7 @@ MY_MAX6675 T2_sensor(T2_CS_PIN);
 MY_MAX6675 T3_sensor(T3_CS_PIN);
 MY_MAX6675 T4_sensor(T4_CS_PIN);
 MY_MAX6675 T5_sensor(T5_CS_PIN);
+MY_MAX6675 T6_sensor(T6_CS_PIN);
 
 void setup(){
     //Serial.begin(9600);
@@ -92,6 +94,9 @@ void serialEvent(){
         Serial.print(",");        
         Serial.print("\"T5\":");
         Serial.print(T5_sensor.readCelsius());
+        Serial.print(",");
+        Serial.print("\"T6\":");
+        Serial.print(T6_sensor.readCelsius());
         Serial.print(",");
         Serial.print("\"T_PID\":");
         Serial.print(temperature);
