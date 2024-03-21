@@ -7,8 +7,6 @@
 #include <PID_v1.h>
 #include <Wire.h> // for I2C comunication S
 
-//code based on https://electronoobs.com/eng_arduino_tut24.php
-
 int PWM_pin = 11; // PID output pin
 double Setpoint;   // temperature setpoint.
 
@@ -27,23 +25,6 @@ double kp =2;  double ki = 5;  double kd = 1;
 
 PID PID_controller(&temperature, &PID_output, &Setpoint, kp, ki, kd, DIRECT);
 
-//pin declaration
-
-int PID_CS_PIN = 3;
-int T1_CS_PIN = 4;
-int T2_CS_PIN = 5;
-int T3_CS_PIN = 6;
-int T4_CS_PIN = 7;
-int T5_CS_PIN = 8;
-int T6_CS_PIN = 9;
-
-MY_MAX6675 PID_sensor(PID_CS_PIN);
-MY_MAX6675 T1_sensor(T1_CS_PIN);
-MY_MAX6675 T2_sensor(T2_CS_PIN);
-MY_MAX6675 T3_sensor(T3_CS_PIN);
-MY_MAX6675 T4_sensor(T4_CS_PIN);
-MY_MAX6675 T5_sensor(T5_CS_PIN);
-MY_MAX6675 T6_sensor(T6_CS_PIN);
 
 void setup(){
     //Serial.begin(9600);
@@ -57,7 +38,7 @@ void setup(){
 
     // turn the PID on
     PID_controller.SetMode(AUTOMATIC);
-    PID_controller.SetSampleTime(250);
+    PID_controller.SetSampleTime(10);
 
 }
 
@@ -72,36 +53,10 @@ void loop(){
     else{
         analogWrite(PWM_pin, 255); // off
     }
-
-    delay(250); // wait because the thermocouple resolution
 }
 
 void serialEvent(){
     String command  = Serial.readString();
-    //measure commands
-    if (command[0] == 'g'){ // g --> get data
-        Serial.print("{\"T1\":");
-        Serial.print(T1_sensor.readCelsius());
-        Serial.print(",");  
-        Serial.print("\"T2\":");
-        Serial.print(T2_sensor.readCelsius());
-        Serial.print(",");        
-        Serial.print("\"T3\":");
-        Serial.print(T3_sensor.readCelsius());
-        Serial.print(",");
-        Serial.print("\"T4\":");
-        Serial.print(T4_sensor.readCelsius());
-        Serial.print(",");        
-        Serial.print("\"T5\":");
-        Serial.print(T5_sensor.readCelsius());
-        Serial.print(",");
-        Serial.print("\"T6\":");
-        Serial.print(T6_sensor.readCelsius());
-        Serial.print(",");
-        Serial.print("\"T_PID\":");
-        Serial.print(temperature);
-        Serial.println("}");
-    }
 
     // ---------------------- oven commands --------------------
     if (command.substring(0, 2) == "eo"){ // eo --> enable oven
