@@ -1,0 +1,26 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>icons/activity.svg</file>
+    <file>icons/table.svg</file>
+    <file>icons/alert-triangle.svg</file>
+    <file>icons/chevrons-left.svg</file>
+    <file>icons/chevrons-right.svg</file>
+    <file>icons/home.svg</file>
+    <file>icons/info.svg</file>
+    <file>icons/layout.svg</file>
+    <file>icons/maximize-2.svg</file>
+    <file>icons/minimize-2.svg</file>
+    <file>icons/minus.svg</file>
+    <file>icons/monitor.svg</file>
+    <file>icons/pause.svg</file>
+    <file>icons/play.svg</file>
+    <file>icons/refresh-ccw.svg</file>
+    <file>icons/resize-right.svg</file>
+    <file>icons/save.svg</file>
+    <file>icons/search.svg</file>
+    <file>icons/settings.svg</file>
+    <file>icons/thermometer.svg</file>
+    <file>icons/user.svg</file>
+    <file>icons/x.svg</file>
+  </qresource>
+</RCC>
