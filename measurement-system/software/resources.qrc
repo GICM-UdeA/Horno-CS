@@ -1,5 +1,13 @@
 <RCC>
   <qresource prefix="icons">
+    <file>icons/square.svg</file>
+    <file>icons/chevrons-down_black.svg</file>
+    <file>icons/chevrons-up_black.svg</file>
+    <file>icons/toggle-left.svg</file>
+    <file>icons/toggle-right.svg</file>
+    <file>icons/chevrons-down.svg</file>
+    <file>icons/chevrons-right.svg</file>
+    <file>icons/chevrons-up.svg</file>
     <file>icons/activity.svg</file>
     <file>icons/table.svg</file>
     <file>icons/alert-triangle.svg</file>
