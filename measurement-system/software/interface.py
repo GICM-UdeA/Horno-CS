@@ -1,36 +1,17 @@
 import serial
 from serial.tools.list_ports import comports
-from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt5 import QtCore, QtWidgets
 from PyQt5.uic import loadUi
 import resources
-from dialogwidget import DialogWidget
-
-
-class UserDialog(DialogWidget):
-    def __init__(self, parent):
-        super(UserDialog, self).__init__(parent, 'user_dialog.ui')
-        self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setText("Change")
-        self.close_button.clicked.connect(self.reject)
-        self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).clicked.connect(self.accept)
-
-    def get_user_values(self):
-        name = "None" if not self.name_lineEdit.text() else self.name_lineEdit.text()
-        email = "None" if not self.email_lineEdit.text() else self.email_lineEdit.text()
-        role = "None" if not self.role_lineEdit.text() else self.role_lineEdit.text()
-
-        return name, email, role
-
-
-class InfoDialog(DialogWidget):
-    def __init__(self, parent):
-        super(InfoDialog, self).__init__(parent, 'info_dialog.ui')
-        self.info_ok_button.clicked.connect(lambda: self.close())
-
+from dialogwidgets import *
+from pandasmodel import PandasModel
+from pandas import DataFrame
+from numpy import zeros, arange
 
 class MS_interface_layout(QtWidgets.QMainWindow):
     def setupUi(self):
         loadUi('interface.ui', self)
-        
+
         # ------------------------  ----- setting up UI elements -------------------------------------
         self.setWindowFlag(QtCore.Qt.FramelessWindowHint)
         self.setWindowOpacity(1)
@@ -64,10 +45,19 @@ class MS_interface_layout(QtWidgets.QMainWindow):
         # --------------------------- setting up COM interfaces ------------------------------------
         self.serial_port = serial.Serial(timeout=1)
         self.serial_params = dict()
-        self.baud_list = {"1200": 1200, "2400": 2400, "4800": 4800, "9600": 9600, "19200": 19200, "38400": 38400, "57600": 57600, "115200": 115200}
-        self.data_bits_list = {"5": serial.FIVEBITS, "6": serial.SIXBITS, "7": serial.SEVENBITS, "8": serial.EIGHTBITS}
-        self.parity_list = {"None": serial.PARITY_NONE, "Even": serial.PARITY_EVEN, "Odd": serial.PARITY_ODD}
-        self.stop_bits_list = {"1": serial.STOPBITS_ONE, "1.5": serial.STOPBITS_ONE_POINT_FIVE, "2": serial.STOPBITS_TWO}
+        self.baud_list = {
+            "1200": 1200, "2400": 2400, "4800": 4800, "9600": 9600, "19200": 19200,
+            "38400": 38400, "57600": 57600, "115200": 115200
+        }
+        self.data_bits_list = {
+            "5": serial.FIVEBITS, "6": serial.SIXBITS, "7": serial.SEVENBITS, "8": serial.EIGHTBITS
+        }
+        self.parity_list = {
+            "None": serial.PARITY_NONE, "Even": serial.PARITY_EVEN, "Odd": serial.PARITY_ODD
+        }
+        self.stop_bits_list = {
+            "1": serial.STOPBITS_ONE, "1.5": serial.STOPBITS_ONE_POINT_FIVE, "2": serial.STOPBITS_TWO
+        }
         self.flowcontrol_list = ["None", "XON/XOFF", "RTS/CTS", "DTR/DSR"]
 
         self.refreshCOMPorts()
@@ -87,7 +77,7 @@ class MS_interface_layout(QtWidgets.QMainWindow):
         self.baud_combobox.setCurrentIndex(7)
         self.databits_combobox.setCurrentIndex(3)
     
-        #------------------------ setting user interface interaction--------------------------------
+        #---------------------------- setting up User interface ------------------------------------
         self.user_name = "None"
         self.user_email = "None"
         self.user_role = "None"
@@ -98,6 +88,10 @@ class MS_interface_layout(QtWidgets.QMainWindow):
             "\ne-mail: " + self.user_email + "\n"
         )
         self.user_button.clicked.connect(self.update_user_info)
+
+        # --------------------------- setting up data regs interface -------------------------------
+        self.reset_table_data()
+
 
     # ----------------------------------- serial configurations ------------------------------------
     def refreshCOMPorts(self):
@@ -236,6 +230,8 @@ class MS_interface_layout(QtWidgets.QMainWindow):
         info_window = InfoDialog(self)
         info_window.exec_()
 
+    # ----------------------------------- UIX data methods -----------------------------------------
+
     def update_user_info(self):
         try:
             user_dialog = UserDialog(self)
@@ -251,6 +247,21 @@ class MS_interface_layout(QtWidgets.QMainWindow):
             "\nRole: " + self.user_role + 
             "\ne-mail: " + self.user_email + "\n"
         )
+
+    def reset_table_data(self):
+        # initialize data with zeros
+        data = dict(zip(["T1", "T2", "T3", "T4", "T5", "T6"], zeros((6, 100))))
+        data["time"] = arange(-24750, 250, 250)
+
+        self.data = DataFrame(
+            data,
+            columns=["time", "T1", "T2", "T3", "T4", "T5", "T6"]
+        )
+        self.update_table_data()
+
+    def update_table_data(self):    
+        self.data_table_viewer.setModel(PandasModel(self.data))
+
 
 if __name__ == "__main__":
     import sys

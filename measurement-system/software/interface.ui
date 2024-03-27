@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>640</width>
+    <width>619</width>
     <height>480</height>
    </rect>
   </property>
@@ -125,6 +125,34 @@ QPushButton:hover{
           <property name="bottomMargin">
            <number>0</number>
           </property>
+          <item>
+           <widget class="QLabel" name="temp_icon">
+            <property name="minimumSize">
+             <size>
+              <width>12</width>
+              <height>12</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>12</width>
+              <height>12</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="pixmap">
+             <pixmap>icons/thermometer.svg</pixmap>
+            </property>
+            <property name="scaledContents">
+             <bool>true</bool>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
           <item alignment="Qt::AlignRight">
            <widget class="QLabel" name="window_title_label">
             <property name="font">
@@ -139,6 +167,9 @@ QPushButton:hover{
             </property>
             <property name="text">
              <string>TMS interface</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
             </property>
             <property name="margin">
              <number>1</number>
@@ -268,7 +299,7 @@ QPushButton:hover{
           <property name="bottomMargin">
            <number>0</number>
           </property>
-          <item alignment="Qt::AlignLeft">
+          <item>
            <widget class="QWidget" name="leftMenu" native="true">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -646,7 +677,7 @@ QPushButton:hover{
                 <number>0</number>
                </property>
                <property name="currentIndex">
-                <number>2</number>
+                <number>3</number>
                </property>
                <widget class="QWidget" name="home_page">
                 <layout class="QVBoxLayout" name="verticalLayout_8">
@@ -1428,8 +1459,8 @@ QPushButton{
                         <rect>
                          <x>0</x>
                          <y>0</y>
-                         <width>351</width>
-                         <height>384</height>
+                         <width>87</width>
+                         <height>79</height>
                         </rect>
                        </property>
                        <layout class="QVBoxLayout" name="verticalLayout_19">
@@ -1489,19 +1520,19 @@ color: #FFFF00;</string>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_10" stretch="1">
                  <property name="spacing">
-                  <number>15</number>
+                  <number>0</number>
                  </property>
                  <property name="leftMargin">
-                  <number>15</number>
+                  <number>10</number>
                  </property>
                  <property name="topMargin">
-                  <number>15</number>
+                  <number>10</number>
                  </property>
                  <property name="rightMargin">
-                  <number>15</number>
+                  <number>10</number>
                  </property>
                  <property name="bottomMargin">
-                  <number>15</number>
+                  <number>10</number>
                  </property>
                  <item>
                   <widget class="QFrame" name="frame_2">
@@ -1555,12 +1586,27 @@ color: #FFFF00;</string>
                        </sizepolicy>
                       </property>
                       <layout class="QHBoxLayout" name="horizontalLayout_17">
+                       <property name="spacing">
+                        <number>5</number>
+                       </property>
+                       <property name="leftMargin">
+                        <number>5</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>5</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>5</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>5</number>
+                       </property>
                        <item>
                         <widget class="QTabWidget" name="tabWidget">
                          <property name="currentIndex">
                           <number>0</number>
                          </property>
-                         <widget class="QWidget" name="tab">
+                         <widget class="QWidget" name="map_plot_tap">
                           <property name="sizePolicy">
                            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                             <horstretch>0</horstretch>
@@ -1568,7 +1614,7 @@ color: #FFFF00;</string>
                            </sizepolicy>
                           </property>
                           <attribute name="title">
-                           <string>Tab 1</string>
+                           <string>Map</string>
                           </attribute>
                           <layout class="QGridLayout" name="gridLayout_4">
                            <property name="leftMargin">
@@ -1591,7 +1637,7 @@ color: #FFFF00;</string>
                            </item>
                           </layout>
                          </widget>
-                         <widget class="QWidget" name="tab_2">
+                         <widget class="QWidget" name="linear_plot_tap">
                           <property name="sizePolicy">
                            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                             <horstretch>0</horstretch>
@@ -1599,7 +1645,7 @@ color: #FFFF00;</string>
                            </sizepolicy>
                           </property>
                           <attribute name="title">
-                           <string>Tab 2</string>
+                           <string>Linear</string>
                           </attribute>
                           <layout class="QGridLayout" name="gridLayout_2">
                            <property name="leftMargin">
@@ -1634,14 +1680,77 @@ color: #FFFF00;</string>
                </widget>
                <widget class="QWidget" name="data_regs_page">
                 <layout class="QVBoxLayout" name="verticalLayout_12">
+                 <property name="spacing">
+                  <number>0</number>
+                 </property>
+                 <property name="leftMargin">
+                  <number>10</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>10</number>
+                 </property>
+                 <property name="rightMargin">
+                  <number>10</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>10</number>
+                 </property>
                  <item>
-                  <widget class="QLabel" name="label_5">
-                   <property name="text">
-                    <string>Data regs pannel</string>
+                  <widget class="QFrame" name="frame_7">
+                   <property name="frameShape">
+                    <enum>QFrame::StyledPanel</enum>
                    </property>
-                   <property name="alignment">
-                    <set>Qt::AlignCenter</set>
+                   <property name="frameShadow">
+                    <enum>QFrame::Raised</enum>
                    </property>
+                   <layout class="QVBoxLayout" name="verticalLayout_9">
+                    <property name="spacing">
+                     <number>5</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
+                    </property>
+                    <item alignment="Qt::AlignHCenter">
+                     <widget class="QLabel" name="label_4">
+                      <property name="text">
+                       <string>TITULO DE LA PÁGINA</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QTableView" name="data_table_viewer">
+                      <property name="font">
+                       <font>
+                        <pointsize>8</pointsize>
+                       </font>
+                      </property>
+                      <property name="sizeAdjustPolicy">
+                       <enum>QAbstractScrollArea::AdjustToContents</enum>
+                      </property>
+                      <property name="autoScrollMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="editTriggers">
+                       <set>QAbstractItemView::NoEditTriggers</set>
+                      </property>
+                      <attribute name="horizontalHeaderMinimumSectionSize">
+                       <number>10</number>
+                      </attribute>
+                      <attribute name="horizontalHeaderDefaultSectionSize">
+                       <number>100</number>
+                      </attribute>
+                     </widget>
+                    </item>
+                   </layout>
                   </widget>
                  </item>
                 </layout>
