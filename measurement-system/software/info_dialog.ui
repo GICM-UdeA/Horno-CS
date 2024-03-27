@@ -57,7 +57,7 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QFrame" name="info_title">
+       <widget class="QFrame" name="window_header">
         <property name="styleSheet">
          <string notr="true">border: none;
 background-color: #1b43f5;

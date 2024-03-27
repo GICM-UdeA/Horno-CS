@@ -3,22 +3,29 @@ from serial.tools.list_ports import comports
 from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.uic import loadUi
 import resources
+from dialogwidget import DialogWidget
 
-class InfoDialog(QtWidgets.QDialog):
+
+class UserDialog(DialogWidget):
     def __init__(self, parent):
-        super(InfoDialog, self).__init__(parent)
-        loadUi('info_dialog.ui', self)
-        self.setWindowFlag(QtCore.Qt.FramelessWindowHint)
-        self.setWindowOpacity(1)
-        self.info_title.mouseMoveEvent = self.move_window
+        super(UserDialog, self).__init__(parent, 'user_dialog.ui')
+        self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setText("Change")
+        self.close_button.clicked.connect(self.reject)
+        self.buttonBox.button(QtWidgets.QDialogButtonBox.Ok).clicked.connect(self.accept)
+
+    def get_user_values(self):
+        name = "None" if not self.name_lineEdit.text() else self.name_lineEdit.text()
+        email = "None" if not self.email_lineEdit.text() else self.email_lineEdit.text()
+        role = "None" if not self.role_lineEdit.text() else self.role_lineEdit.text()
+
+        return name, email, role
+
+
+class InfoDialog(DialogWidget):
+    def __init__(self, parent):
+        super(InfoDialog, self).__init__(parent, 'info_dialog.ui')
         self.info_ok_button.clicked.connect(lambda: self.close())
 
-    def move_window(self, event):
-        self.clickPosition = self.pos()
-        if event.buttons() == QtCore.Qt.LeftButton:
-            self.move(self.pos() + event.globalPos() - self.clickPosition)
-            self.clickPosition = event.globalPos()
-            event.accept()
 
 class MS_interface_layout(QtWidgets.QMainWindow):
     def setupUi(self):
@@ -30,6 +37,7 @@ class MS_interface_layout(QtWidgets.QMainWindow):
         self.show_hide_menu(0, "main")
         self.show_hide_menu(0, "advance-connection")
         self.disconnect_frame.hide()
+        self.frame_4.hide()
         self.resize_window(0)
         self.size_grip_button.hide() # Need to be fixed
         self.set_body_page(0)
@@ -50,9 +58,8 @@ class MS_interface_layout(QtWidgets.QMainWindow):
 
         self.home_button.clicked.connect(lambda: self.set_body_page(0))
         self.connect_button.clicked.connect(lambda: self.set_body_page(1))
-        self.user_button.clicked.connect(lambda: self.set_body_page(2))
-        self.data_plot_button.clicked.connect(lambda: self.set_body_page(3))
-        self.data_regs_button.clicked.connect(lambda: self.set_body_page(4))
+        self.data_plot_button.clicked.connect(lambda: self.set_body_page(2))
+        self.data_regs_button.clicked.connect(lambda: self.set_body_page(3))
         self.info_button.clicked.connect(self.show_info)
         # --------------------------- setting up COM interfaces ------------------------------------
         self.serial_port = serial.Serial(timeout=1)
@@ -79,6 +86,18 @@ class MS_interface_layout(QtWidgets.QMainWindow):
 
         self.baud_combobox.setCurrentIndex(7)
         self.databits_combobox.setCurrentIndex(3)
+    
+        #------------------------ setting user interface interaction--------------------------------
+        self.user_name = "None"
+        self.user_email = "None"
+        self.user_role = "None"
+        
+        self.user_button.setToolTip(
+            "name: " + self.user_name + 
+            "\nRole: " + self.user_role + 
+            "\ne-mail: " + self.user_email + "\n"
+        )
+        self.user_button.clicked.connect(self.update_user_info)
 
     # ----------------------------------- serial configurations ------------------------------------
     def refreshCOMPorts(self):
@@ -163,8 +182,8 @@ class MS_interface_layout(QtWidgets.QMainWindow):
             animation.setStartValue(values[1])
             animation.setEndValue(values[0])
 
-        animation.setDuration(100000)
-        animation.setEasingCurve(QtCore.QEasingCurve.InOutBack)
+        animation.setDuration(1000)
+        animation.setEasingCurve(QtCore.QEasingCurve.Linear)
         animation.start()
     
     def resize_window(self, size):
@@ -197,18 +216,18 @@ class MS_interface_layout(QtWidgets.QMainWindow):
         else:
             self.show_hide_menu(0, "connection")
         if page == 2:
-            self.main_body_content.setCurrentWidget(self.user_page)
-        if page == 3:
             self.main_body_content.setCurrentWidget(self.data_viewer_page)
-        if page == 4:
+        if page == 3:
             self.main_body_content.setCurrentWidget(self.data_regs_page)
 
-        if page == 3 or page == 4:
+        if page == 2 or page == 3:
             self.data_control_panel.show()
+            self.frame_4.show()
         else:
             self.data_control_panel.hide()
+            self.frame_4.hide()
 
-        if page != 0 and page != 2:
+        if page != 0:
             self.connection_control_panel.show()
         else:
             self.connection_control_panel.hide()
@@ -217,7 +236,21 @@ class MS_interface_layout(QtWidgets.QMainWindow):
         info_window = InfoDialog(self)
         info_window.exec_()
 
+    def update_user_info(self):
+        try:
+            user_dialog = UserDialog(self)
+            user_dialog.setModal(True)
+            if user_dialog.exec_() == QtWidgets.QDialog.Accepted :
+                self.user_name, self.user_email, self.user_role = user_dialog.get_user_values()
 
+        except Exception as e:
+            print(e)
+
+        self.user_button.setToolTip(
+            "name: " + self.user_name + 
+            "\nRole: " + self.user_role + 
+            "\ne-mail: " + self.user_email + "\n"
+        )
 
 if __name__ == "__main__":
     import sys

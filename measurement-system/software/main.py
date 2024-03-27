@@ -51,6 +51,7 @@ class MS_interface(MS_interface_layout):
             except Exception as e:
                 self.serial_monitor_textEdit.appendPlainText("Error trying to close " + self.serial_params["port"])
 
+
 def main():
     # Handle high resolution displays:
     if hasattr(Qt, 'AA_EnableHighDpiScaling'):

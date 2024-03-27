@@ -1,5 +1,9 @@
 <RCC>
   <qresource prefix="icons">
+    <file>icons/database.svg</file>
+    <file>icons/clock.svg</file>
+    <file>icons/cpu.svg</file>
+    <file>icons/send.svg</file>
     <file>icons/square.svg</file>
     <file>icons/chevrons-down_black.svg</file>
     <file>icons/chevrons-up_black.svg</file>
